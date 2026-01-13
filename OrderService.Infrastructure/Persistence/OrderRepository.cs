@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OrderService.Application.Interface;
 using OrderService.Domain.Entities;
 using System;
@@ -11,17 +12,22 @@ namespace OrderService.Infrastructure.Persistence
 {
     public class OrderRepository : IOrderRepository
     {
-        private static readonly List<Order> _orders = new();
+        private readonly OrderDbContext _db;
+        public OrderRepository(OrderDbContext db)
+        {
+            _db = db;
+        }
 
         public Task AddAsync(Order order, CancellationToken ct)
         {
-            _orders.Add(order);
+            _db.Orders.AddAsync(order);
+            //await _db.SaveChangesAsync(); dont put savechangesasync here, will make atomicity gone because it will be partial commit
             return Task.CompletedTask;
         }
 
         public Task<Order?> GetByIdAsync(Guid id, CancellationToken ct)
         {
-            return Task.FromResult(_orders.FirstOrDefault(x => x.Id == id));
+            return _db.Orders.FirstOrDefaultAsync(x => x.Id == id);
         }
     }
 }

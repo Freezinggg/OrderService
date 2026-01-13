@@ -1,4 +1,5 @@
-﻿using OrderService.Application.Interface;
+﻿using Microsoft.EntityFrameworkCore;
+using OrderService.Application.Interface;
 using OrderService.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,16 +11,21 @@ namespace OrderService.Infrastructure.Persistence
 {
     public class IdempotencyRepository : IIdempotencyRepository
     {
-        private static readonly List<IdempotencyRecord> _records = new();
+        private readonly OrderDbContext _db;
+        public IdempotencyRepository(OrderDbContext db)
+        {
+            _db = db;
+        }
+
         public Task AddAsync(IdempotencyRecord idempotency, CancellationToken ct)
         {
-            _records.Add(idempotency);
+            _db.IdempotencyRecords.Add(idempotency);
             return Task.CompletedTask;
         }
 
         public Task<Guid?> FindOrderIdAsync(string key, CancellationToken ct)
         {
-            var record = _records.FirstOrDefault(x => x.Key == key);
+            var record = _db.IdempotencyRecords.FirstOrDefault(x => x.Key == key);
             return Task.FromResult(record?.OrderId);
         }
     }

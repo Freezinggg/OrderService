@@ -19,6 +19,11 @@ namespace OrderService.Domain.Entities
         public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
         private readonly List<OrderItem> _items;
 
+        private Order()
+        {
+            _items = new List<OrderItem>();
+        }
+
         public Order(
             Guid id,
             Guid customerId,

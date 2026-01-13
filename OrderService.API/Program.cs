@@ -1,3 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+using OrderService.Application.Handler.CreateOrder;
+using OrderService.Application.Interface;
+using OrderService.Infrastructure.Persistence;
+
 namespace OrderService.API
 {
     public class Program
@@ -8,6 +13,19 @@ namespace OrderService.API
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
+            builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+
+
+            builder.Services.AddDbContext<OrderDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
+            builder.Services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
+            });
 
             var app = builder.Build();
 

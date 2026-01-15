@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using static OrderService.Domain.Exception.DomainException;
 
 namespace OrderService.Application.Handler.CreateOrder
 {
@@ -45,7 +46,7 @@ namespace OrderService.Application.Handler.CreateOrder
                 DateTime currentDateTime = DateTime.UtcNow;
                 Guid orderId = Guid.NewGuid();
                 var items = request.Items
-                    .Select(i => new OrderItem(Guid.NewGuid(), orderId,  i.Code, i.Quantity))
+                    .Select(i => new OrderItem(Guid.NewGuid(), orderId, i.Code, i.Quantity))
                     .ToList().AsReadOnly(); //Make it secure, cannot be mutated
                 Order order = new(
                     orderId,
@@ -69,7 +70,7 @@ namespace OrderService.Application.Handler.CreateOrder
 
                 //PERSIST OUTCOME THEN
                 await _orderRepository.AddAsync(order, cancellationToken);
-                
+
                 await _uow.CommitAsync(cancellationToken);
 
                 //Please remove this after testing
@@ -90,7 +91,18 @@ namespace OrderService.Application.Handler.CreateOrder
             {
                 //This is domain exception, which is to check INVARIANT
                 await _uow.RollbackAsync(cancellationToken);
-                return Result<Guid>.Invalid(ex.Message);
+
+                return ex.Category switch
+                {
+                    FailureCategory.Invariant =>
+                        Result<Guid>.Invalid(ex.Message),
+
+                    FailureCategory.Policy or FailureCategory.State =>
+                        Result<Guid>.Fail(ex.Message),
+
+                    _ =>
+                        Result<Guid>.Error("Unhandled domain exception.")
+                };
             }
             catch
             {

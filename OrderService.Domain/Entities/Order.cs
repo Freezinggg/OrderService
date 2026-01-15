@@ -33,16 +33,16 @@ namespace OrderService.Domain.Entities
             string idempotencyKey)
         {
             if (id == Guid.Empty)
-                throw new DomainException("OrderId cannot be empty.");
+                throw new InvariantViolationException("OrderId cannot be empty.");
 
             if (customerId == Guid.Empty)
-                throw new DomainException("Customer cannot be empty.");
+                throw new InvariantViolationException("Customer cannot be empty.");
 
             if (items == null || !items.Any())
-                throw new DomainException("Order must contain at least one item.");
+                throw new InvariantViolationException("Order must contain at least one item.");
 
             if (string.IsNullOrWhiteSpace(idempotencyKey))
-                throw new DomainException("IdempotencyKey is required.");
+                throw new InvariantViolationException("IdempotencyKey is required.");
 
             Id = id;
             CustomerId = customerId;
@@ -52,6 +52,24 @@ namespace OrderService.Domain.Entities
 
             Status = OrderStatus.Active;
             _items = new List<OrderItem>(items);
+        }
+
+        public void Cancel()
+        {
+            EnsureNotTerminal();
+            Status = OrderStatus.Canceled;
+        }
+
+        public void Expire()
+        {
+            EnsureNotTerminal();
+            Status = OrderStatus.Expired;
+        }
+
+        public void EnsureNotTerminal()
+        {
+            if (Status == OrderStatus.Canceled || Status == OrderStatus.Expired)
+                throw new InvalidStateTransitionException($"Order {Id} is in terminal state: {Status}");
         }
     }
 

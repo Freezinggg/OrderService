@@ -7,6 +7,7 @@ using OrderService.Domain.Entities;
 using OrderService.Domain.Exception;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,6 +21,7 @@ namespace OrderService.Application.Handler.CreateOrder
         private readonly IIdempotencyRepository _idempotencyRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IUnitOfWork _uow;
+        private readonly IOrderMetric _metric;
 
         private static bool IsIdempotencyConflict(DbUpdateException ex)
         {
@@ -31,15 +33,20 @@ namespace OrderService.Application.Handler.CreateOrder
             return false;
         }
 
-        public CreateOrderCommandHandler(IIdempotencyRepository idempotencyRepository, IOrderRepository orderRepository, IUnitOfWork uow)
+        public CreateOrderCommandHandler(IIdempotencyRepository idempotencyRepository, IOrderRepository orderRepository, IUnitOfWork uow, IOrderMetric metric)
         {
             _idempotencyRepository = idempotencyRepository;
             _orderRepository = orderRepository;
             _uow = uow;
+            _metric = metric;
         }
 
         public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
+            var stopwatch = Stopwatch.StartNew();
+
+            Result<Guid> result = new();
+
             await _uow.BeginAsync(cancellationToken);
             try
             {
@@ -76,7 +83,7 @@ namespace OrderService.Application.Handler.CreateOrder
                 //Please remove this after testing
                 //Environment.FailFast("Simulated crash after commit");
 
-                return Result<Guid>.Success(order.Id);
+                result = Result<Guid>.Success(order.Id);
             }
             catch (DbUpdateException ex) when (IsIdempotencyConflict(ex))
             {
@@ -85,31 +92,44 @@ namespace OrderService.Application.Handler.CreateOrder
                     await _idempotencyRepository.FindOrderIdAsync(request.IdempotencyKey, cancellationToken);
 
                 await _uow.RollbackAsync(cancellationToken);
-                return Result<Guid>.Success(existingOrderId!.Value);
+                result = Result<Guid>.Success(existingOrderId!.Value);
             }
             catch (DomainException ex)
             {
                 //This is domain exception, which is to check INVARIANT
                 await _uow.RollbackAsync(cancellationToken);
 
-                return ex.Category switch
+                switch (ex.Category)
                 {
-                    FailureCategory.Invariant =>
-                        Result<Guid>.Invalid(ex.Message),
-
-                    FailureCategory.Policy or FailureCategory.State =>
-                        Result<Guid>.Fail(ex.Message),
-
-                    _ =>
-                        Result<Guid>.Error("Unhandled domain exception.")
-                };
+                    case FailureCategory.Invariant:
+                        result = Result<Guid>.Invalid(ex.Message);
+                        break;
+                    case FailureCategory.Policy or FailureCategory.State:
+                        result = Result<Guid>.Fail(ex.Message);
+                        break;
+                    default:
+                        result = Result<Guid>.Error("Unhandled domain exception.");
+                        break;
+                }
             }
             catch
             {
                 //Catch in general, system crash etc
                 await _uow.RollbackAsync(cancellationToken);
-                throw;
+                result = Result<Guid>.ServiceUnavailable("Service unavailable");
             }
+            finally
+            {
+                stopwatch.Stop();
+
+                //Add metrics, result will depend on Status of result
+                _metric.RecordCreateOrder(
+                    result.Status,
+                    stopwatch.ElapsedMilliseconds
+                );
+            }
+
+            return result;
         }
     }
 }

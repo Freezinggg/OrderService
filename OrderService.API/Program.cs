@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Interface;
+using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Persistence;
 
 namespace OrderService.API
@@ -17,6 +19,7 @@ namespace OrderService.API
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
             builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+            builder.Services.AddScoped<IOrderMetric, OTelOrderMetricRecorder>();
 
 
             builder.Services.AddDbContext<OrderDbContext>(options =>
@@ -25,6 +28,16 @@ namespace OrderService.API
             builder.Services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
+            });
+
+            builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddMeter("OrderService.Metrics")
+                    .AddAspNetCoreInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddPrometheusExporter();
             });
 
             var app = builder.Build();
@@ -39,6 +52,8 @@ namespace OrderService.API
 
             app.UseHttpsRedirection();
             app.UseRouting();
+
+            app.MapPrometheusScrapingEndpoint();
 
             app.UseAuthorization();
 

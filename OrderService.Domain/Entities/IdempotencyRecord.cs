@@ -18,13 +18,13 @@ namespace OrderService.Domain.Entities
         public IdempotencyRecord(Guid id, string key, Guid orderId, DateTime createdAt)
         {
             if (id == Guid.Empty)
-                throw new DomainException("Idempotency record id cannot be empty.");
+                throw new InvariantViolationException("Idempotency record id cannot be empty.");
 
             if (string.IsNullOrWhiteSpace(key))
-                throw new DomainException("Idempotency key cannot be empty.");
+                throw new InvariantViolationException("Idempotency key cannot be empty.");
 
             if (orderId == Guid.Empty)
-                throw new DomainException("OrderId cannot be empty.");
+                throw new InvariantViolationException("OrderId cannot be empty.");
 
             Id = id;
             Key = key;

@@ -18,8 +18,8 @@ namespace OrderService.Domain.Entities
         private OrderItem() { }
         public OrderItem(Guid id, Guid orderId, string code, int quantity)
         {
-            if (string.IsNullOrWhiteSpace(code)) throw new DomainException("Code must not be empty.");
-            if (quantity <= 0) throw new DomainException("Quantity must be at leastt 1");
+            if (string.IsNullOrWhiteSpace(code)) throw new InvariantViolationException("Code must not be empty.");
+            if (quantity <= 0) throw new InvariantViolationException("Quantity must be at least 1");
 
             Id = id;
             OrderId = orderId;

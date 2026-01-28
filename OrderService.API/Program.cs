@@ -4,6 +4,7 @@ using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Interface;
 using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Persistence;
+using OrderService.Infrastructure.Pressure;
 
 namespace OrderService.API
 {
@@ -20,7 +21,8 @@ namespace OrderService.API
             builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
             builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             builder.Services.AddScoped<IOrderMetric, OTelOrderMetricRecorder>();
-
+            builder.Services.AddScoped<IPressureMetric, OTelPressureMetricRecorder>();
+            builder.Services.AddScoped<IPressureGate, PressureGate>();
 
             builder.Services.AddDbContext<OrderDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
@@ -35,6 +37,7 @@ namespace OrderService.API
             {
                 metrics
                     .AddMeter("OrderService.Metrics")
+                    .AddMeter("OrderService.Pressure")
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddPrometheusExporter();

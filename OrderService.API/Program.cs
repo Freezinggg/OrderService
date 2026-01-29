@@ -23,6 +23,9 @@ namespace OrderService.API
             builder.Services.AddScoped<IOrderMetric, OTelOrderMetricRecorder>();
             builder.Services.AddScoped<IPressureMetric, OTelPressureMetricRecorder>();
             builder.Services.AddScoped<IPressureGate, PressureGate>();
+            builder.Services.AddSingleton<IConcurrencyLimiter>(
+                new ConcurrencyLimiter(capacity: 1)
+            );
 
             builder.Services.AddDbContext<OrderDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));

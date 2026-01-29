@@ -20,13 +20,15 @@ namespace OrderService.API.Controllers
         private readonly IPressureGate _pressureGate;
         private readonly IOrderMetric _metric;
         private readonly IPressureMetric _pressureMetric;
+        private readonly IConcurrencyLimiter _concurrencyLimiter;
 
-        public OrderController(IMediator mediator, IPressureGate pressure, IOrderMetric metric, IPressureMetric pressureMetric)
+        public OrderController(IMediator mediator, IPressureGate pressure, IOrderMetric metric, IPressureMetric pressureMetric, IConcurrencyLimiter concurrencyLimiter)
         {
             _mediator = mediator;
             _pressureGate = pressure;
             _metric = metric;
             _pressureMetric = pressureMetric;
+            _concurrencyLimiter = concurrencyLimiter;
         }
 
         [HttpPost]
@@ -54,19 +56,31 @@ namespace OrderService.API.Controllers
                 return StatusCode(429);
             }
 
+            if (!_concurrencyLimiter.TryAcquire())
+            {
+                return StatusCode(503);
+            }
+
             _pressureMetric.RecordAllowed();
 
-            var result = await _mediator.Send(body);
-            //return result.IsSuccess ? Ok(ApiResponse<Guid>.Ok(result.Data)) : BadRequest(ApiResponse<Guid>.Fail(result.ErrorMessage));
-
-            return result.Status switch
+            try
             {
-                ResultStatus.Success => Ok(ApiResponse<Guid>.Ok(result.Data)),
-                ResultStatus.Invalid => BadRequest(ApiResponse<Guid>.Fail(result.ErrorMessage)),
-                ResultStatus.Fail => Conflict(ApiResponse<Guid>.Fail(result.ErrorMessage)),
-                ResultStatus.Error => StatusCode(500, ApiResponse<Guid>.Fail(result.ErrorMessage)),
-                _ => StatusCode(500, ApiResponse<Guid>.Fail("Unhandled result status")) //default value if ResultStatus is its new or default
-            };
+                var result = await _mediator.Send(body);
+                //return result.IsSuccess ? Ok(ApiResponse<Guid>.Ok(result.Data)) : BadRequest(ApiResponse<Guid>.Fail(result.ErrorMessage));
+
+                return result.Status switch
+                {
+                    ResultStatus.Success => Ok(ApiResponse<Guid>.Ok(result.Data)),
+                    ResultStatus.Invalid => BadRequest(ApiResponse<Guid>.Fail(result.ErrorMessage)),
+                    ResultStatus.Fail => Conflict(ApiResponse<Guid>.Fail(result.ErrorMessage)),
+                    ResultStatus.Error => StatusCode(500, ApiResponse<Guid>.Fail(result.ErrorMessage)),
+                    _ => StatusCode(500, ApiResponse<Guid>.Fail("Unhandled result status")) //default value if ResultStatus is its new or default
+                };
+            }
+            finally
+            {
+                _concurrencyLimiter.Release();
+            }
         }
     }
 }

@@ -43,6 +43,8 @@ namespace OrderService.Application.Handler.CreateOrder
 
         public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
             var stopwatch = Stopwatch.StartNew();
 
             Result<Guid> result = new();
@@ -128,6 +130,8 @@ namespace OrderService.Application.Handler.CreateOrder
                     stopwatch.ElapsedMilliseconds
                 );
             }
+
+            
 
             return result;
         }

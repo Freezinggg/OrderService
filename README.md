@@ -34,7 +34,10 @@ What this service does NOT do
 
 ## Current State
 - Persistence in-memory only
-- Transaction boundaries are explicitly designed, but not yet enforced by a DB
+- Transaction boundaries are explicitly designed, and enforced by DB
+- Metrics are implemented
+- Pressure/Admission Control are implemented in controller
+- Concurrency Controller are implemented in controller
 
 ## Purpose of This Project
 This project exists to answer questions like:
@@ -46,3 +49,4 @@ It is a learning project focused on reasoning about backend systems, not shippin
 
 ## Note
 This is a learning project, so please expect some bug, minor changes, and a bit choke.
+

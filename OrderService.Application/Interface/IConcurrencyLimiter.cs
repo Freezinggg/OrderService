@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderService.Application.RateLimit;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace OrderService.Application.Interface
 {
     public interface IConcurrencyLimiter
     {
-        bool TryAcquire();
+        ConcurrencyDecision TryAcquire();
         void Release();
     }
 }

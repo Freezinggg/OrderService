@@ -20,16 +20,25 @@ namespace OrderService.API
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
             builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-            builder.Services.AddScoped<IOrderMetric, OTelOrderMetricRecorder>();
-            builder.Services.AddScoped<IPressureMetric, OTelPressureMetricRecorder>();
             builder.Services.AddScoped<IPressureGate, PressureGate>();
-            builder.Services.AddSingleton<IConcurrencyLimiter>(
-                new ConcurrencyLimiter(capacity: 1)
-            );
 
+            //Uses singleton bcs its process-wide, single. not per request, but per system
+            builder.Services.AddSingleton<IOrderMetric, OTelOrderMetricRecorder>();
+            builder.Services.AddSingleton<IPressureMetric, OTelPressureMetricRecorder>();
+            builder.Services.AddSingleton<IConcurrencyMetric, OTelConcurrencyMetricRecorder>();
+
+            builder.Services.AddSingleton<IConcurrencyLimiter>(sp =>
+            {
+                var metric = sp.GetRequiredService<IConcurrencyMetric>();
+                var capacity = 1; // config later
+                return new ConcurrencyLimiter(capacity, metric);
+            });
+
+            //Conn strings
             builder.Services.AddDbContext<OrderDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
+            //MediatR
             builder.Services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommand).Assembly);
@@ -41,6 +50,7 @@ namespace OrderService.API
                 metrics
                     .AddMeter("OrderService.Metrics")
                     .AddMeter("OrderService.Pressure")
+                    .AddMeter("OrderService.Concurrency")
                     .AddAspNetCoreInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddPrometheusExporter();

@@ -19,15 +19,12 @@ namespace OrderService.API.Controllers
         private readonly IMediator _mediator;
         private readonly IPressureGate _pressureGate;
         private readonly IOrderMetric _metric;
-        private readonly IPressureMetric _pressureMetric;
         private readonly IConcurrencyLimiter _concurrencyLimiter;
 
-        public OrderController(IMediator mediator, IPressureGate pressure, IOrderMetric metric, IPressureMetric pressureMetric, IConcurrencyLimiter concurrencyLimiter)
+        public OrderController(IMediator mediator, IPressureGate pressure, IConcurrencyLimiter concurrencyLimiter)
         {
             _mediator = mediator;
             _pressureGate = pressure;
-            _metric = metric;
-            _pressureMetric = pressureMetric;
             _concurrencyLimiter = concurrencyLimiter;
         }
 
@@ -40,29 +37,23 @@ namespace OrderService.API.Controllers
                 ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()
             );
 
-            var decision = _pressureGate.Evaluate(context);
-
-
-            if (!decision.IsAllowed)
+            var pressureDecision = _pressureGate.Evaluate(context);
+            if (!pressureDecision.IsAllowed)
             {
-                if (decision.RetryAfter.HasValue)
+                if (pressureDecision.RetryAfter.HasValue)
                 {
                     Response.Headers["Retry-After"] =
-                        ((int)decision.RetryAfter.Value.TotalSeconds).ToString();
+                        ((int)pressureDecision.RetryAfter.Value.TotalSeconds).ToString();
                 }
-
-                _pressureMetric.RecordRejected();
-
                 return StatusCode(429);
             }
 
-            if (!_concurrencyLimiter.TryAcquire())
+
+            var concurrencyDecision = _concurrencyLimiter.TryAcquire();
+            if (!concurrencyDecision.IsAllowed)
             {
                 return StatusCode(503);
             }
-
-            _pressureMetric.RecordAllowed();
-
             try
             {
                 var result = await _mediator.Send(body);

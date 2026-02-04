@@ -52,7 +52,13 @@ namespace OrderService.API.Controllers
             var concurrencyDecision = _concurrencyLimiter.TryAcquire();
             if (!concurrencyDecision.IsAllowed)
             {
-                return StatusCode(503);
+                return StatusCode(503, new
+                {
+                    reason = "capacity_exhausted",
+                    retryStrategy = concurrencyDecision.hint?.Strategy,
+                    minBackoffMs = concurrencyDecision.hint?.MinDelayMs,
+                    maxBackoffMs = concurrencyDecision.hint?.MaxDelayMs
+                });
             }
             try
             {

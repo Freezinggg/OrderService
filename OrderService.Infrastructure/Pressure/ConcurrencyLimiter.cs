@@ -33,11 +33,13 @@ namespace OrderService.Infrastructure.Pressure
             if (!_semaphore.Wait(0))
             {
                 _metric.Rejected();
-                return ConcurrencyDecision.Rejected();
+                return ConcurrencyDecision.Rejected(BackoffHint.ExponentialJitter());
             }
 
             _metric.Acquired();
             return ConcurrencyDecision.Allowed();
         }
     }
+
+
 }

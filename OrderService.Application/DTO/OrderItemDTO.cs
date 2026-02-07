@@ -10,5 +10,11 @@ namespace OrderService.Application.DTO
     {
         public string Code { get; set; }
         public int Quantity { get; set; }
+
+        public OrderItemDTO(string code, int quantity)
+        {
+            Code = code;
+            Quantity = quantity;
+        }
     }
 }

@@ -27,7 +27,7 @@ namespace OrderService.Infrastructure.Persistence
 
         public Task<Order?> GetByIdAsync(Guid id, CancellationToken ct)
         {
-            return _db.Orders.FirstOrDefaultAsync(x => x.Id == id);
+            return _db.Orders.Include("_items").FirstOrDefaultAsync(x => x.Id == id);
         }
     }
 }

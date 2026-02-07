@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Application.Common;
+using OrderService.Application.DTO;
 using OrderService.Application.Handler.CreateOrder;
+using OrderService.Application.Handler.GetOrderById;
 using OrderService.Application.Interface;
 using OrderService.Application.RateLimit;
 using OrderService.Infrastructure.Pressure;
@@ -78,6 +80,17 @@ namespace OrderService.API.Controllers
             {
                 _concurrencyLimiter.Release();
             }
+        }
+
+        [HttpGet("{orderId}")]
+        public async Task<IActionResult> GetById(Guid orderId)
+        {
+            var result = await _mediator.Send(new GetOrderByIdQuery(orderId));
+            return result.Status switch
+            {
+                ResultStatus.Success => Ok(ApiResponse<OrderSummaryDTO>.Ok(result.Data)),
+                ResultStatus.NotFound => NotFound(ApiResponse<OrderSummaryDTO>.Fail(result.ErrorMessage)),
+            };
         }
     }
 }

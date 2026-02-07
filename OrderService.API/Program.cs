@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Interface;
+using OrderService.Application.Interface.Cache;
+using OrderService.Infrastructure.Cache;
 using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Persistence;
 using OrderService.Infrastructure.Pressure;
@@ -21,6 +23,7 @@ namespace OrderService.API
             builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
             builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             builder.Services.AddScoped<IPressureGate, PressureGate>();
+            builder.Services.AddScoped<IOrderSummaryCache, InMemoryOrderSummaryCache>();
 
             //Uses singleton bcs its process-wide, single. not per request, but per system
             builder.Services.AddSingleton<IOrderMetric, OTelOrderMetricRecorder>();

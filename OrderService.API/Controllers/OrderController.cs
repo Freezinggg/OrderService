@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.Application.Common;
 using OrderService.Application.DTO;
+using OrderService.Application.Handler.CancelOrder;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Handler.GetOrderById;
 using OrderService.Application.Interface;
@@ -90,6 +91,21 @@ namespace OrderService.API.Controllers
             {
                 ResultStatus.Success => Ok(ApiResponse<OrderSummaryDTO>.Ok(result.Data)),
                 ResultStatus.NotFound => NotFound(ApiResponse<OrderSummaryDTO>.Fail(result.ErrorMessage)),
+                _ => StatusCode(500, ApiResponse<Guid>.Fail("Unhandled result status")) //default value if ResultStatus is its new or default
+            };
+        }
+
+        [HttpPost("{orderId}/cancel")]
+        public async Task<IActionResult> CancelOrdeer(Guid orderId)
+        {
+            var result = await _mediator.Send(new CancelOrderCommand(orderId));
+            return result.Status switch
+            {
+                ResultStatus.Success => Ok(ApiResponse<bool>.Ok(result.Data)),
+                ResultStatus.Invalid => BadRequest(ApiResponse<bool>.Fail(result.ErrorMessage)),
+                ResultStatus.Fail => Conflict(ApiResponse<bool>.Fail(result.ErrorMessage)),
+                ResultStatus.Error => StatusCode(500, ApiResponse<bool>.Fail(result.ErrorMessage)),
+                _ => StatusCode(500, ApiResponse<bool>.Fail("Unhandled result status"))
             };
         }
     }

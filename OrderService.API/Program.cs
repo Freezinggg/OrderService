@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
+using OrderService.API.WorkerService;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Interface;
 using OrderService.Application.Interface.Cache;
@@ -36,6 +37,10 @@ namespace OrderService.API
                 var capacity = 1; // config later
                 return new ConcurrencyLimiter(capacity, metric);
             });
+
+
+            //Background Worker
+            builder.Services.AddHostedService<OrderCompletionWorker>();
 
             //Conn strings
             builder.Services.AddDbContext<OrderDbContext>(options =>

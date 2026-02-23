@@ -11,5 +11,9 @@ namespace OrderService.Application.Interface
     {
         Task AddAsync(Order order, CancellationToken ct);
         Task<Order?> GetByIdAsync(Guid id, CancellationToken ct);
+
+        Task<List<Guid>> GetActiveOrderIdsAsync(CancellationToken ct);
+        Task<bool> TryCompleteAsync(Guid id, DateTime now, CancellationToken ct);
+        Task<bool> TryCancelAsync(Guid id, CancellationToken ct);
     }
 }

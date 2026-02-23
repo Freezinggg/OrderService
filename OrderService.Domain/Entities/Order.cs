@@ -50,14 +50,14 @@ namespace OrderService.Domain.Entities
             ExpiredAt = expiredAt;
             IdempotencyKey = idempotencyKey;
 
-            Status = OrderStatus.Active;
+            Status = OrderStatus.Pending;
             _items = new List<OrderItem>(items);
         }
 
         public void Cancel()
         {
             EnsureNotTerminal();
-            Status = OrderStatus.Canceled;
+            Status = OrderStatus.Cancelled;
         }
 
         public void Expire()
@@ -68,7 +68,7 @@ namespace OrderService.Domain.Entities
 
         public void EnsureNotTerminal()
         {
-            if (Status == OrderStatus.Canceled || Status == OrderStatus.Expired)
+            if (Status == OrderStatus.Cancelled || Status == OrderStatus.Expired || Status == OrderStatus.Completed)
                 throw new InvalidStateTransitionException($"Order {Id} is in terminal state: {Status}");
         }
     }
@@ -76,8 +76,9 @@ namespace OrderService.Domain.Entities
 
     public enum OrderStatus : int
     {
-        Active = 1,
-        Canceled = 2,
-        Expired = 3
+        Pending = 1, //row/order exist, completion not yet executed
+        Completed = 2, //async finished, business invariant met, terminal
+        Cancelled = 3, //terminal, by client
+        Expired = 4 //time-based invalidation, terminal
     }
 }

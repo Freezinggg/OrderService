@@ -10,5 +10,7 @@ namespace OrderService.Application.Interface
     public interface IOrderMetric
     {
         void RecordCreateOrder(ResultStatus status, long durationMs);
+        void RecordAsyncPendingAge(double seconds);
+        void SetPendingCount(long count);
     }
 }

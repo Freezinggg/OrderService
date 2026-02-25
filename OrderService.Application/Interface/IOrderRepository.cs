@@ -1,4 +1,5 @@
-﻿using OrderService.Domain.Entities;
+﻿using OrderService.Application.Record;
+using OrderService.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace OrderService.Application.Interface
         Task AddAsync(Order order, CancellationToken ct);
         Task<Order?> GetByIdAsync(Guid id, CancellationToken ct);
 
-        Task<List<Guid>> GetActiveOrderIdsAsync(CancellationToken ct);
+        Task<List<PendingOrderRecord>> GetPendingOrderAsync(CancellationToken ct);
         Task<bool> TryCompleteAsync(Guid id, DateTime now, CancellationToken ct);
         Task<bool> TryCancelAsync(Guid id, CancellationToken ct);
     }

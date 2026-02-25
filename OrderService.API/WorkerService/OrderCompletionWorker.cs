@@ -1,19 +1,23 @@
 ﻿using OrderService.Application.Interface;
+using OrderService.Domain.Entities;
 
 namespace OrderService.API.WorkerService
 {
     public sealed class OrderCompletionWorker : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IOrderMetric _orderMetric;
         private readonly ILogger<OrderCompletionWorker> _logger;
         private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(3);
 
 
         public OrderCompletionWorker(
             IServiceScopeFactory scopeFactory,
+            IOrderMetric orderMetric,
             ILogger<OrderCompletionWorker> logger)
         {
             _scopeFactory = scopeFactory;
+            _orderMetric = orderMetric;
             _logger = logger;
         }
 
@@ -30,12 +34,18 @@ namespace OrderService.API.WorkerService
                     var repo = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
 
                     var now = DateTime.UtcNow;
-                    var activeOrders = await repo.GetActiveOrderIdsAsync(stoppingToken);
+                    var pendingOrders = await repo.GetPendingOrderAsync(stoppingToken);
+                    _orderMetric.SetPendingCount(pendingOrders.Count);
 
-                    foreach (var id in activeOrders)
+                    foreach (var order in pendingOrders)
                     {
-                        //await Task.Delay(5000, stoppingToken); // artificial delay
-                        await repo.TryCompleteAsync(id, now, stoppingToken);
+                        await Task.Delay(5000, stoppingToken); // artificial delay
+                        var success = await repo.TryCompleteAsync(order.id, now, stoppingToken);
+                        if (success)
+                        {
+                            var ageSeconds = (now - order.createdAt).TotalSeconds;
+                            _orderMetric.RecordAsyncPendingAge(ageSeconds);
+                        }
                     }
                 }
                 catch (Exception ex)

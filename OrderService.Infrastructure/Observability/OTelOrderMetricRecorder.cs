@@ -11,6 +11,7 @@ namespace OrderService.Infrastructure.Observability
 {
     public class OTelOrderMetricRecorder : IOrderMetric
     {
+        private long _currentPendingCount;
         private static readonly Meter Meter = new("OrderService.Metrics");
 
         private static readonly Counter<long> RequestSucceededCounter =
@@ -30,6 +31,26 @@ namespace OrderService.Infrastructure.Observability
 
         private static readonly Histogram<long> RequestDurationMs =
             Meter.CreateHistogram<long>("order_create_duration_ms", "ms");
+
+        private static readonly Histogram<double> OrderPendingAge =
+            Meter.CreateHistogram<double>(
+                "order_async_pending_age_seconds",
+                unit: "seconds",
+                description: "Time an order spent pending before completion");
+
+        public OTelOrderMetricRecorder()
+        {
+            Meter.CreateObservableGauge<long>(
+                "orders_pending_count",
+                () => new Measurement<long>(_currentPendingCount),
+                description: "Current number of orders in Pending state");
+        }
+
+
+        public void RecordAsyncPendingAge(double seconds)
+        {
+            OrderPendingAge.Record(seconds);
+        }
 
         public void RecordCreateOrder(ResultStatus status, long durationMs)
         {
@@ -53,6 +74,11 @@ namespace OrderService.Infrastructure.Observability
             }
 
             RequestDurationMs.Record(durationMs);
+        }
+
+        public void SetPendingCount(long count)
+        {
+            _currentPendingCount = count;
         }
     }
 }

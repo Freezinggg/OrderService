@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.Interface;
+using OrderService.Application.Record;
 using OrderService.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -31,9 +32,12 @@ namespace OrderService.Infrastructure.Persistence
             return _db.Orders.Include("_items").FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task<List<Guid>> GetActiveOrderIdsAsync(CancellationToken ct)
+        public async Task<List<PendingOrderRecord>> GetPendingOrderAsync(CancellationToken ct)
         {
-            return await _db.Orders.Where(x => x.Status == OrderStatus.Pending).Select(x => x.Id).ToListAsync(ct);
+            return await _db.Orders
+                .Where(x => x.Status == OrderStatus.Pending)
+                .Select(x => new PendingOrderRecord(x.Id, x.CreatedAt))
+                .ToListAsync(ct);
         }
 
         public async Task<bool> TryCancelAsync(Guid id,  CancellationToken ct)

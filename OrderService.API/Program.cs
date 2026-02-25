@@ -41,6 +41,7 @@ namespace OrderService.API
 
             //Background Worker
             builder.Services.AddHostedService<OrderCompletionWorker>();
+            builder.Services.AddHostedService<OrderExpirationWorker>();
 
             //Conn strings
             builder.Services.AddDbContext<OrderDbContext>(options =>

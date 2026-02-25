@@ -34,12 +34,11 @@ namespace OrderService.API.WorkerService
                     var repo = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
 
                     var now = DateTime.UtcNow;
-                    var pendingOrders = await repo.GetPendingOrderAsync(stoppingToken);
+                    var pendingOrders = await repo.ClaimPendingOrderAsync(10, stoppingToken);
                     _orderMetric.SetPendingCount(pendingOrders.Count);
 
                     foreach (var order in pendingOrders)
                     {
-                        await Task.Delay(5000, stoppingToken); // artificial delay
                         var success = await repo.TryCompleteAsync(order.id, now, stoppingToken);
                         if (success)
                         {

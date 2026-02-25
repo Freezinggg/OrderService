@@ -13,7 +13,8 @@ namespace OrderService.Application.Interface
         Task AddAsync(Order order, CancellationToken ct);
         Task<Order?> GetByIdAsync(Guid id, CancellationToken ct);
 
-        Task<List<PendingOrderRecord>> GetPendingOrderAsync(CancellationToken ct);
+        Task<List<PendingOrderRecord>> ClaimPendingOrderAsync(int batchSize, CancellationToken ct);
+        Task<int> ExpireProcessingOrderAsync(DateTime threshold, CancellationToken ct);
         Task<bool> TryCompleteAsync(Guid id, DateTime now, CancellationToken ct);
         Task<bool> TryCancelAsync(Guid id, CancellationToken ct);
     }

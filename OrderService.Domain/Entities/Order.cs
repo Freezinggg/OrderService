@@ -14,6 +14,7 @@ namespace OrderService.Domain.Entities
         public OrderStatus Status { get; private set; }
         public DateTime CreatedAt { get; }
         public DateTime ExpiredAt { get; }
+        public DateTime? ProcessedAt { get; private set; }
         public string IdempotencyKey { get; }
 
         public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
@@ -77,8 +78,9 @@ namespace OrderService.Domain.Entities
     public enum OrderStatus : int
     {
         Pending = 1, //row/order exist, completion not yet executed
-        Completed = 2, //async finished, business invariant met, terminal
-        Cancelled = 3, //terminal, by client
-        Expired = 4 //time-based invalidation, terminal
+        Processing, //processed
+        Completed, //async finished, business invariant met, terminal
+        Cancelled, //terminal, by client
+        Expired //time-based invalidation, terminal
     }
 }

@@ -94,13 +94,20 @@ namespace OrderService.Infrastructure.Persistence
         {
             //LINQ order > Get order where status is processing & processedat != null (not pending) & processedat < threshold (expired, with 5 minutes threshold/grace period)
             //After above query executed, get the list of the orders, then update all the orders to expired
-            return await _db.Orders
+            var rows = await _db.Orders
                 .Where(o => o.Status == OrderStatus.Processing &&
                             o.ProcessedAt != null &&
                             o.ProcessedAt < threshold)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(o => o.Status, OrderStatus.Expired),
                     ct);
+
+            return rows;
+        }
+
+        public async Task<int> GetProcessingOrderCountAsync(CancellationToken ct)
+        {
+            return await _db.Orders.Where(x => x.Status == OrderStatus.Processing).CountAsync();
         }
     }
 }

@@ -17,5 +17,6 @@ namespace OrderService.Application.Interface
         Task<int> ExpireProcessingOrderAsync(DateTime threshold, CancellationToken ct);
         Task<bool> TryCompleteAsync(Guid id, DateTime now, CancellationToken ct);
         Task<bool> TryCancelAsync(Guid id, CancellationToken ct);
+        Task<int> GetProcessingOrderCountAsync(CancellationToken ct);
     }
 }

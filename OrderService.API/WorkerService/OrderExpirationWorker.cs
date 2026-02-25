@@ -25,9 +25,14 @@ namespace OrderService.API.WorkerService
                     using var scope = _scopeFactory.CreateScope();
                     var repo = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
 
+                    var processingCount = await repo.GetProcessingOrderCountAsync(stoppingToken);
+                    _orderMetric.SetProcessingCurrent(processingCount);
+
                     //var expirationThreshold = DateTime.UtcNow.AddMinutes(-5);
                     var expirationThreshold = DateTime.UtcNow.AddSeconds(-10);
-                    await repo.ExpireProcessingOrderAsync(expirationThreshold, stoppingToken);
+                    var expiredRows = await repo.ExpireProcessingOrderAsync(expirationThreshold, stoppingToken);
+
+                    if (expiredRows > 0) _orderMetric.RecordProcessingExpired(expiredRows);
                 }
                 catch (Exception ex)
                 {

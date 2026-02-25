@@ -44,6 +44,7 @@ namespace OrderService.API.WorkerService
                         {
                             var ageSeconds = (now - order.createdAt).TotalSeconds;
                             _orderMetric.RecordAsyncPendingAge(ageSeconds);
+                            _orderMetric.RecordCompleted();
                         }
                     }
                 }

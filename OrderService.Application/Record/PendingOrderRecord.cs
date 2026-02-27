@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.Record
 {
-    public sealed record PendingOrderRecord(Guid id, DateTime createdAt);
+    public sealed record PendingOrderRecord(Guid Id, DateTime CreatedAt, Guid ExecutionId);
 }

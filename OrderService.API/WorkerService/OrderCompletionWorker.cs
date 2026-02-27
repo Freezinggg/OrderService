@@ -24,7 +24,9 @@ namespace OrderService.API.WorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("OrderCompletionWorker started.");
+            //_logger.LogInformation("OrderCompletionWorker started.");
+
+            Console.WriteLine($"Worker {Guid.NewGuid()} started");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -33,18 +35,26 @@ namespace OrderService.API.WorkerService
                     using var scope = _scopeFactory.CreateScope();
                     var repo = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
 
-                    var now = DateTime.UtcNow;
-                    var pendingOrders = await repo.ClaimPendingOrderAsync(10, stoppingToken);
-                    _orderMetric.SetPendingCount(pendingOrders.Count);
+                    var claimedOrders = await repo.ClaimPendingOrderAsync(10, stoppingToken);
+                    _orderMetric.SetPendingCount(claimedOrders.Count);
 
-                    foreach (var order in pendingOrders)
+                    foreach (var order in claimedOrders)
                     {
-                        var success = await repo.TryCompleteAsync(order.id, now, stoppingToken);
+                        Console.WriteLine($"Claimed {order.Id} with ExecId {order.ExecutionId} at {DateTime.Now}");
+                        await Task.Delay(20000);
+
+                        var now = DateTime.UtcNow;
+                        var success = await repo.TryCompleteAsync(order.Id, order.ExecutionId, now, stoppingToken);
                         if (success)
                         {
-                            var ageSeconds = (now - order.createdAt).TotalSeconds;
+                            var ageSeconds = (now - order.CreatedAt).TotalSeconds;
                             _orderMetric.RecordAsyncPendingAge(ageSeconds);
                             _orderMetric.RecordCompleted();
+                            Console.WriteLine($"Completion success: {success} with exec id {order.ExecutionId} at {DateTime.Now}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Completion failed: {success} with exec id {order.ExecutionId} at {DateTime.Now}");
                         }
                     }
                 }

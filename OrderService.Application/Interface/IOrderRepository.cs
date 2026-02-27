@@ -14,8 +14,8 @@ namespace OrderService.Application.Interface
         Task<Order?> GetByIdAsync(Guid id, CancellationToken ct);
 
         Task<List<PendingOrderRecord>> ClaimPendingOrderAsync(int batchSize, CancellationToken ct);
-        Task<int> ExpireProcessingOrderAsync(DateTime threshold, CancellationToken ct);
-        Task<bool> TryCompleteAsync(Guid id, DateTime now, CancellationToken ct);
+        Task<int> ExpireProcessingOrderAsync(DateTime now, CancellationToken ct);
+        Task<bool> TryCompleteAsync(Guid id, Guid executionId, DateTime now, CancellationToken ct);
         Task<bool> TryCancelAsync(Guid id, CancellationToken ct);
         Task<int> GetProcessingOrderCountAsync(CancellationToken ct);
     }

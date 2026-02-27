@@ -15,6 +15,8 @@ namespace OrderService.Domain.Entities
         public DateTime CreatedAt { get; }
         public DateTime ExpiredAt { get; }
         public DateTime? ProcessedAt { get; private set; }
+        public DateTime? ProcessingUntil { get; private set; }
+        public Guid? ExecutionId { get; private set; }
         public string IdempotencyKey { get; }
 
         public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();

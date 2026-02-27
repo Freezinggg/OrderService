@@ -41,7 +41,7 @@ namespace OrderService.API
 
             //Background Worker
             builder.Services.AddHostedService<OrderCompletionWorker>();
-            builder.Services.AddHostedService<OrderExpirationWorker>();
+            //builder.Services.AddHostedService<OrderExpirationWorker>();
 
             //Conn strings
             builder.Services.AddDbContext<OrderDbContext>(options =>
@@ -65,6 +65,9 @@ namespace OrderService.API
                     .AddPrometheusExporter();
             });
 
+            builder.Logging.ClearProviders();
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -87,6 +90,9 @@ namespace OrderService.API
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
                 .WithStaticAssets();
+
+            var hostedServices = app.Services.GetServices<IHostedService>();
+            Console.WriteLine($"HostedService count: {hostedServices.Count()}");
 
             app.Run();
         }

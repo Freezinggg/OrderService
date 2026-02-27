@@ -30,6 +30,8 @@ namespace OrderService.Infrastructure.Persistence
                     entity.Property(x => x.CreatedAt).IsRequired();
                     entity.Property(x => x.ExpiredAt).IsRequired();
                     entity.Property(x => x.ProcessedAt);
+                    entity.Property(x => x.ProcessingUntil);
+                    entity.Property(x => x.ExecutionId);
                     entity.Property(x => x.IdempotencyKey).IsRequired();
 
                     entity.Ignore(x => x.Items);

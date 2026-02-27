@@ -28,9 +28,7 @@ namespace OrderService.API.WorkerService
                     var processingCount = await repo.GetProcessingOrderCountAsync(stoppingToken);
                     _orderMetric.SetProcessingCurrent(processingCount);
 
-                    //var expirationThreshold = DateTime.UtcNow.AddMinutes(-5);
-                    var expirationThreshold = DateTime.UtcNow.AddSeconds(-10);
-                    var expiredRows = await repo.ExpireProcessingOrderAsync(expirationThreshold, stoppingToken);
+                    var expiredRows = await repo.ExpireProcessingOrderAsync(DateTime.UtcNow, stoppingToken);
 
                     if (expiredRows > 0) _orderMetric.RecordProcessingExpired(expiredRows);
                 }

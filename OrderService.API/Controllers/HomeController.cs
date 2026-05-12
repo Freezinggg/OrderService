@@ -6,6 +6,7 @@ namespace OrderService.API.Controllers
 {
     public class HomeController : Controller
     {
+        public static int IndexHit = 0;
         private readonly ILogger<HomeController> _logger;
 
         public HomeController(ILogger<HomeController> logger)
@@ -15,6 +16,9 @@ namespace OrderService.API.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.Message = "This is " + Environment.GetEnvironmentVariable("INSTANCE_NAME");
+            IndexHit++;
+            ViewBag.IndexHitCounter = IndexHit;
             return View();
         }
 

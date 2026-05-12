@@ -94,6 +94,32 @@ namespace OrderService.API
             var hostedServices = app.Services.GetServices<IHostedService>();
             Console.WriteLine($"HostedService count: {hostedServices.Count()}");
 
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+
+                const int maxRetries = 10;
+
+                for (int attempt = 1; attempt <= maxRetries; attempt++)
+                {
+                    try
+                    {
+                        db.Database.Migrate();
+                        Console.WriteLine("Database migration successful.");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Migration attempt {attempt} failed: {ex.Message}");
+
+                        if (attempt == maxRetries)
+                            throw;
+
+                        Thread.Sleep(3000);
+                    }
+                }
+            }
+
             app.Run();
         }
     }

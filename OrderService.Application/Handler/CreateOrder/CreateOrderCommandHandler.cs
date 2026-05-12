@@ -129,8 +129,6 @@ namespace OrderService.Application.Handler.CreateOrder
                 );
             }
 
-            
-
             return result;
         }
     }

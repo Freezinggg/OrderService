@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using OrderService.API.Models;
+using OrderService.Application.Interface.Cache;
 
 namespace OrderService.API.Controllers
 {
@@ -8,17 +9,20 @@ namespace OrderService.API.Controllers
     {
         public static int IndexHit = 0;
         private readonly ILogger<HomeController> _logger;
+        private readonly ISharedCounterCache _cache;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ISharedCounterCache cache)
         {
             _logger = logger;
+            _cache = cache;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             ViewBag.Message = "This is " + Environment.GetEnvironmentVariable("INSTANCE_NAME");
             IndexHit++;
             ViewBag.IndexHitCounter = IndexHit;
+            ViewBag.Cache = await _cache.IncrementAsync();
             return View();
         }
 

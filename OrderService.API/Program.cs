@@ -8,6 +8,7 @@ using OrderService.Infrastructure.Cache;
 using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Persistence;
 using OrderService.Infrastructure.Pressure;
+using StackExchange.Redis;
 
 namespace OrderService.API
 {
@@ -30,6 +31,7 @@ namespace OrderService.API
             builder.Services.AddSingleton<IOrderMetric, OTelOrderMetricRecorder>();
             builder.Services.AddSingleton<IPressureMetric, OTelPressureMetricRecorder>();
             builder.Services.AddSingleton<IConcurrencyMetric, OTelConcurrencyMetricRecorder>();
+            builder.Services.AddSingleton<ISharedCounterCache, RedisSharedCounterCache>();
 
             builder.Services.AddSingleton<IConcurrencyLimiter>(sp =>
             {
@@ -46,6 +48,20 @@ namespace OrderService.API
             //Conn strings
             builder.Services.AddDbContext<OrderDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
+
+            //Redis
+            builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                //var configuration = builder.Configuration.GetConnectionString("Redis");
+                var configuration = Environment.GetEnvironmentVariable("REDIS_CONNECTION");
+
+                //If redis isnt up/connected, abort connection
+                var options = ConfigurationOptions.Parse(configuration);
+                options.AbortOnConnectFail = false;
+
+                return ConnectionMultiplexer.Connect(options);
+            });
 
             //MediatR
             builder.Services.AddMediatR(cfg =>

@@ -20,9 +20,6 @@ namespace OrderService.API.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.Message = "This is " + Environment.GetEnvironmentVariable("INSTANCE_NAME");
-            IndexHit++;
-            ViewBag.IndexHitCounter = IndexHit;
-            ViewBag.Cache = await _cache.IncrementAsync();
             return View();
         }
 

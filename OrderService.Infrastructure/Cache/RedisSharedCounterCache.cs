@@ -13,7 +13,6 @@ namespace OrderService.Infrastructure.Cache
     {
         private readonly ILogger<RedisSharedCounterCache> _logger;
         private readonly IDatabase _db;
-        private readonly string key = "orderservice:shared-counter";
 
         public RedisSharedCounterCache(IConnectionMultiplexer redis, ILogger<RedisSharedCounterCache> logger)
         {
@@ -21,12 +20,19 @@ namespace OrderService.Infrastructure.Cache
             _logger = logger;
         }
 
-        public async Task<long> IncrementAsync()
+        public async Task<TimeSpan?> GetTTLAsync(string key)
         {
-            await _db.StringIncrementAsync(key);
-            var val = await _db.StringGetAsync(key);
+            return await _db.KeyTimeToLiveAsync(key);
+        }
 
-            return val.HasValue ? (long)val : 0;
+        public async Task<long> IncrementAsync(string key)
+        {
+            return await _db.StringIncrementAsync(key);
+        }
+
+        public async Task SetExpirationAsync(string key, TimeSpan expiration)
+        {
+            await _db.KeyExpireAsync(key, expiration);
         }
     }
 }

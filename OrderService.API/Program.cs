@@ -8,6 +8,7 @@ using OrderService.Infrastructure.Cache;
 using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Persistence;
 using OrderService.Infrastructure.Pressure;
+using OrderService.Infrastructure.RateLimit;
 using StackExchange.Redis;
 
 namespace OrderService.API
@@ -26,19 +27,20 @@ namespace OrderService.API
             builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             builder.Services.AddScoped<IPressureGate, PressureGate>();
             builder.Services.AddScoped<IOrderSummaryCache, InMemoryOrderSummaryCache>();
+            builder.Services.AddScoped<ISharedCounterCache, RedisSharedCounterCache>();
+
 
             //Uses singleton bcs its process-wide, single. not per request, but per system
             builder.Services.AddSingleton<IOrderMetric, OTelOrderMetricRecorder>();
             builder.Services.AddSingleton<IPressureMetric, OTelPressureMetricRecorder>();
             builder.Services.AddSingleton<IConcurrencyMetric, OTelConcurrencyMetricRecorder>();
-            builder.Services.AddSingleton<ISharedCounterCache, RedisSharedCounterCache>();
-
             builder.Services.AddSingleton<IConcurrencyLimiter>(sp =>
             {
                 var metric = sp.GetRequiredService<IConcurrencyMetric>();
                 var capacity = 1; // config later
                 return new ConcurrencyLimiter(capacity, metric);
             });
+            builder.Services.AddSingleton<IRateLimiter, RedisRateLimiter>();
 
 
             //Background Worker

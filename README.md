@@ -38,12 +38,9 @@ The main goal is understanding how backend systems behave under:
 ---
 
 # Current Topology
-Browser
-  ↓
-Nginx
-  ↓
-API-1 / API-2
-  ↓
-Redis
-  ↓
-PostgreSQL
+Browser -> Nginx -> API-1 / API-2 -> Redis -> PostgreSQL
+
+# Tech Stack
+- .NET 9
+- PostgresSQL
+- Docker (services such as Redis and Nginx)

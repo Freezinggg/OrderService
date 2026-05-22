@@ -24,12 +24,13 @@ namespace OrderService.API
 
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
+            builder.Services.AddScoped<IOutboxEventRepository, OutboxRepository>();
+
             builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             builder.Services.AddScoped<IPressureGate, PressureGate>();
             builder.Services.AddScoped<IOrderSummaryCache, InMemoryOrderSummaryCache>();
-            builder.Services.AddScoped<ISharedCounterCache, RedisSharedCounterCache>();
-
-
+            
+            
             //Uses singleton bcs its process-wide, single. not per request, but per system
             builder.Services.AddSingleton<IOrderMetric, OTelOrderMetricRecorder>();
             builder.Services.AddSingleton<IPressureMetric, OTelPressureMetricRecorder>();
@@ -40,30 +41,35 @@ namespace OrderService.API
                 var capacity = 1; // config later
                 return new ConcurrencyLimiter(capacity, metric);
             });
-            builder.Services.AddSingleton<IRateLimiter, RedisRateLimiter>();
 
+            var useRedis = builder.Configuration.GetValue<bool>("Features:UseRedis");
+            if (useRedis)
+            {
+                builder.Services.AddScoped<ISharedCounterCache, RedisSharedCounterCache>();
+                builder.Services.AddSingleton<IRateLimiter, RedisRateLimiter>();
+
+                builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+                {
+                    //var configuration = builder.Configuration.GetConnectionString("Redis");
+                    var configuration = Environment.GetEnvironmentVariable("REDIS_CONNECTION");
+
+                    //If redis isnt up/connected, abort connection
+                    var options = ConfigurationOptions.Parse(configuration);
+                    options.AbortOnConnectFail = false;
+
+                    return ConnectionMultiplexer.Connect(options);
+                });
+            }
 
             //Background Worker
-            builder.Services.AddHostedService<OrderCompletionWorker>();
+            //builder.Services.AddHostedService<OrderCompletionWorker>();
             //builder.Services.AddHostedService<OrderExpirationWorker>();
+            builder.Services.AddHostedService<OutboxWorker>();
+
 
             //Conn strings
             builder.Services.AddDbContext<OrderDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
-
-
-            //Redis
-            builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-            {
-                //var configuration = builder.Configuration.GetConnectionString("Redis");
-                var configuration = Environment.GetEnvironmentVariable("REDIS_CONNECTION");
-
-                //If redis isnt up/connected, abort connection
-                var options = ConfigurationOptions.Parse(configuration);
-                options.AbortOnConnectFail = false;
-
-                return ConnectionMultiplexer.Connect(options);
-            });
 
             //MediatR
             builder.Services.AddMediatR(cfg =>

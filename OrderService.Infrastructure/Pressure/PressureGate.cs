@@ -17,8 +17,8 @@ namespace OrderService.Infrastructure.Pressure
             _metric = metric;
         }
 
-        const int Limit = 2;
-        TimeSpan Window = TimeSpan.FromSeconds(10);
+        const int Limit = 20;
+        TimeSpan Window = TimeSpan.FromSeconds(5);
 
         private static readonly Dictionary<(string Endpoint, string Ip), WindowEntry> _windows = new();
 

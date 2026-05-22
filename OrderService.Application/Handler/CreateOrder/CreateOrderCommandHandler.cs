@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Npgsql;
 using OrderService.Application.Common;
 using OrderService.Application.Interface;
@@ -20,6 +21,7 @@ namespace OrderService.Application.Handler.CreateOrder
     {
         private readonly IIdempotencyRepository _idempotencyRepository;
         private readonly IOrderRepository _orderRepository;
+        private readonly IOutboxEventRepository _outboxRepository;
         private readonly IUnitOfWork _uow;
         private readonly IOrderMetric _metric;
 
@@ -33,12 +35,13 @@ namespace OrderService.Application.Handler.CreateOrder
             return false;
         }
 
-        public CreateOrderCommandHandler(IIdempotencyRepository idempotencyRepository, IOrderRepository orderRepository, IUnitOfWork uow, IOrderMetric metric)
+        public CreateOrderCommandHandler(IIdempotencyRepository idempotencyRepository, IOrderRepository orderRepository, IUnitOfWork uow, IOrderMetric metric, IOutboxEventRepository outboxEventRepository)
         {
             _idempotencyRepository = idempotencyRepository;
             _orderRepository = orderRepository;
             _uow = uow;
             _metric = metric;
+            _outboxRepository = outboxEventRepository;
         }
 
         public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -64,6 +67,13 @@ namespace OrderService.Application.Handler.CreateOrder
                     request.IdempotencyKey
                     );
 
+                //Outbox Pattern
+                var payload = JsonConvert.SerializeObject(new
+                {
+                    OrderId = order.Id
+                });
+                OutboxEvent outboxEvent = new(Guid.NewGuid(), EventType.OrderCreated, payload);
+
                 IdempotencyRecord idempotencyRecord = new(Guid.NewGuid(), request.IdempotencyKey, order.Id, currentDateTime);
 
                 //persist inside atomic boundary. IDEMPOTENCY first, then ORDER. ALWAYS.
@@ -77,6 +87,9 @@ namespace OrderService.Application.Handler.CreateOrder
 
                 //PERSIST OUTCOME THEN
                 await _orderRepository.AddAsync(order, cancellationToken);
+
+                //PERSIST 
+                await _outboxRepository.AddAsync(outboxEvent, cancellationToken);
 
                 await _uow.CommitAsync(cancellationToken);
 

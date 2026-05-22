@@ -21,7 +21,7 @@ namespace OrderService.API.WorkerService
             _logger = logger;
         }
 
-
+        //Order as source of truth and business process continuation/mutation
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             //_logger.LogInformation("OrderCompletionWorker started.");

@@ -18,6 +18,9 @@ namespace OrderService.Infrastructure.Persistence
         public DbSet<Order> Orders { get; set; } = null!;
         public DbSet<OrderItem> OrderItems { get; set; } = null!;
         public DbSet<IdempotencyRecord> IdempotencyRecords { get; set; } = null!;
+        public DbSet<OutboxEvent> OutboxEvents { get; set; } = null!;
+        public DbSet<OrderProjection> OrderProjections { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
@@ -61,7 +64,23 @@ namespace OrderService.Infrastructure.Persistence
                     entity.HasIndex(x => x.Key)
                           .IsUnique();
 
+                })
+                .Entity<OutboxEvent>(entity =>
+                {
+                    entity.HasKey(x => x.Id);
+
+                    entity.Property(x => x.EventType).IsRequired();
+                    entity.Property(x => x.Payload).IsRequired();
+                    entity.Property(x => x.CreatedAt).IsRequired();
+                    entity.Property(x => x.ProcessedAt);
+                })
+                .Entity<OrderProjection>(entity =>
+                {
+                    entity.HasKey(x => x.OrderId);
+                    entity.Property(x => x.Status).IsRequired();
+                    entity.Property(x => x.ProjectedAt).IsRequired();
                 });
+                
         }
     }
 }

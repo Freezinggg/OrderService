@@ -9,12 +9,10 @@ namespace OrderService.API.Controllers
     {
         public static int IndexHit = 0;
         private readonly ILogger<HomeController> _logger;
-        private readonly ISharedCounterCache _cache;
 
-        public HomeController(ILogger<HomeController> logger, ISharedCounterCache cache)
+        public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            _cache = cache;
         }
 
         public async Task<IActionResult> Index()

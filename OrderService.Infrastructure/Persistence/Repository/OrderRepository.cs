@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using OrderService.Application.Interface;
+using OrderService.Application.Interface.Repository;
 using OrderService.Application.Record;
 using OrderService.Domain.Entities;
 using System;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderService.Infrastructure.Persistence
+namespace OrderService.Infrastructure.Persistence.Repository
 {
     public class OrderRepository : IOrderRepository
     {

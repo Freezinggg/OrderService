@@ -4,9 +4,13 @@ using OrderService.API.WorkerService;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Interface;
 using OrderService.Application.Interface.Cache;
+using OrderService.Application.Interface.Metrics;
+using OrderService.Application.Interface.RateLimit;
+using OrderService.Application.Interface.Repository;
 using OrderService.Infrastructure.Cache;
 using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Persistence;
+using OrderService.Infrastructure.Persistence.Repository;
 using OrderService.Infrastructure.Pressure;
 using OrderService.Infrastructure.RateLimit;
 using StackExchange.Redis;
@@ -22,9 +26,11 @@ namespace OrderService.API
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            //Repository
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
             builder.Services.AddScoped<IOutboxEventRepository, OutboxRepository>();
+            builder.Services.AddScoped<IOrderProjectionRepository, OrderProjectionRepository>();
 
             builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             builder.Services.AddScoped<IPressureGate, PressureGate>();

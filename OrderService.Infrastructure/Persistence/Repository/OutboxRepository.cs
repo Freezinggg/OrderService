@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OrderService.Application.Interface;
+using OrderService.Application.Interface.Repository;
 using OrderService.Application.Record;
 using OrderService.Domain.Entities;
 using System;
@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderService.Infrastructure.Persistence
+namespace OrderService.Infrastructure.Persistence.Repository
 {
     public class OutboxRepository : IOutboxEventRepository
     {

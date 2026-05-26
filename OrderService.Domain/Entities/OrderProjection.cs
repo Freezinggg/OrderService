@@ -10,7 +10,9 @@ namespace OrderService.Domain.Entities
     {
         public Guid OrderId { get; private set; }
         public OrderStatus Status { get; private set; }
-        public DateTime ProjectedAt { get; private set; }
+
+        public DateTime FirstProjectedAt { get; private set; }
+        public DateTime LastProjectedAt { get; private set; }
 
         private OrderProjection() { }
 
@@ -20,7 +22,15 @@ namespace OrderService.Domain.Entities
         {
             OrderId = orderId;
             Status = status;
-            ProjectedAt = DateTime.UtcNow;
+
+            FirstProjectedAt = DateTime.UtcNow;
+            LastProjectedAt = DateTime.UtcNow;
+        }
+
+        public void UpdateStatus(OrderStatus status)
+        {
+            Status = status;
+            LastProjectedAt = DateTime.UtcNow;
         }
     }
 }

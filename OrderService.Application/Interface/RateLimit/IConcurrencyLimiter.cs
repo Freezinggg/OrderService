@@ -1,15 +1,15 @@
 ﻿using OrderService.Application.RateLimit;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderService.Application.Interface
+namespace OrderService.Application.Interface.RateLimit
 {
-    public interface IPressureGate
+    public interface IConcurrencyLimiter
     {
-        PressureDecision Evaluate(PressureContext context);
+        ConcurrencyDecision TryAcquire();
+        void Release();
     }
 }

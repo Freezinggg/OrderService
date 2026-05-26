@@ -1,4 +1,5 @@
-﻿using OrderService.Application.Interface;
+﻿using OrderService.Application.Interface.Metrics;
+using OrderService.Application.Interface.RateLimit;
 using OrderService.Application.RateLimit;
 using OrderService.Infrastructure.Observability;
 using System;

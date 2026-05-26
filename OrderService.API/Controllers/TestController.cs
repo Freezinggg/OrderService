@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 using OrderService.Application.Common;
 using OrderService.Application.DTO;
 using OrderService.Application.Handler.GetOrderById;
-using OrderService.Application.Interface;
 using OrderService.Application.Interface.Cache;
+using OrderService.Application.Interface.RateLimit;
 using System.Text.Json.Serialization;
 
 namespace OrderService.API.Controllers

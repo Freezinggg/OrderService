@@ -2,6 +2,7 @@
 using OrderService.Application.Common;
 using OrderService.Application.Interface;
 using OrderService.Application.Interface.Cache;
+using OrderService.Application.Interface.Repository;
 using OrderService.Domain.Exception;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,5 @@
-﻿using OrderService.Application.Interface;
+﻿using OrderService.Application.Interface.Metrics;
+using OrderService.Application.Interface.Repository;
 using OrderService.Domain.Entities;
 
 namespace OrderService.API.WorkerService

@@ -78,7 +78,8 @@ namespace OrderService.Infrastructure.Persistence
                 {
                     entity.HasKey(x => x.OrderId);
                     entity.Property(x => x.Status).IsRequired();
-                    entity.Property(x => x.ProjectedAt).IsRequired();
+                    entity.Property(x => x.FirstProjectedAt).IsRequired();
+                    entity.Property(x => x.LastProjectedAt);
                 });
                 
         }

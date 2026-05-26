@@ -4,6 +4,9 @@ using Newtonsoft.Json;
 using Npgsql;
 using OrderService.Application.Common;
 using OrderService.Application.Interface;
+using OrderService.Application.Interface.Metrics;
+using OrderService.Application.Interface.Repository;
+using OrderService.Application.Outbox.Payloads;
 using OrderService.Domain.Entities;
 using OrderService.Domain.Exception;
 using System;
@@ -68,10 +71,7 @@ namespace OrderService.Application.Handler.CreateOrder
                     );
 
                 //Outbox Pattern
-                var payload = JsonConvert.SerializeObject(new
-                {
-                    OrderId = order.Id
-                });
+                var payload = JsonConvert.SerializeObject(new OrderCreatedPayload(orderId));
                 OutboxEvent outboxEvent = new(Guid.NewGuid(), EventType.OrderCreated, payload);
 
                 IdempotencyRecord idempotencyRecord = new(Guid.NewGuid(), request.IdempotencyKey, order.Id, currentDateTime);

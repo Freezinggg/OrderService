@@ -42,6 +42,11 @@ namespace OrderService.API.WorkerService
                     {
                         try
                         {
+                            await Task.Delay(3000, stoppingToken);
+                            await _outboxRepo.MarkOutboxEventProcessed(outboxEvent.Id, stoppingToken);
+                            //throw new Exception("Projection update failed");
+
+
                             //TODO: do async work here
 
                             #region Async continuation projection
@@ -79,9 +84,6 @@ namespace OrderService.API.WorkerService
                                 }
                             }
                             #endregion
-
-                            await Task.Delay(3000, stoppingToken);
-                            await _outboxRepo.MarkOutboxEventProcessed(outboxEvent.Id, stoppingToken);
                         }
                         catch(Exception ex)
                         {

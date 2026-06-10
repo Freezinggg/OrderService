@@ -134,5 +134,10 @@ namespace OrderService.Infrastructure.Persistence.Repository
         {
             return await _db.Orders.Where(x => x.Status == OrderStatus.Processing).CountAsync();
         }
+
+        public async Task<List<Order>> GetAllAsync(CancellationToken ct)
+        {
+            return await _db.Orders.AsNoTracking().ToListAsync();
+        }
     }
 }

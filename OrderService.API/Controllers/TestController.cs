@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Confluent.Kafka;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OrderService.Application.Common;
@@ -42,6 +43,33 @@ namespace OrderService.API.Controllers
             }
 
             return BadRequest();
+        }
+
+
+        [HttpPost("kafka")]
+        public async Task<IActionResult> Kafka_Test()
+        {
+            var config = new ProducerConfig
+            {
+                BootstrapServers = "kafka:9092"
+            };
+
+            var producer = new ProducerBuilder<Null, string>(config).Build();
+
+            //Message
+            await producer.ProduceAsync(
+            "order-events",
+            new Message<Null, string>
+            {
+                Value = """
+                {
+                    "eventType": "OrderCreated",
+                    "orderId": 999
+                }
+                """
+            });
+
+            return Ok();
         }
     }
 }

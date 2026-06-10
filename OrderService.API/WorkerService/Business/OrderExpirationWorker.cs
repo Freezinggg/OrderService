@@ -1,7 +1,7 @@
 ﻿using OrderService.Application.Interface.Metrics;
 using OrderService.Application.Interface.Repository;
 
-namespace OrderService.API.WorkerService
+namespace OrderService.API.WorkerService.Business
 {
     public sealed class OrderExpirationWorker : BackgroundService
     {

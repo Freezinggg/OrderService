@@ -12,6 +12,7 @@ namespace OrderService.Application.Interface.Repository
     {
         Task AddAsync(Order order, CancellationToken ct);
         Task<Order?> GetByIdAsync(Guid id, CancellationToken ct);
+        Task<List<Order>> GetAllAsync(CancellationToken ct);
 
         Task<List<PendingOrderRecord>> ClaimPendingOrderAsync(int batchSize, CancellationToken ct);
         Task<int> ExpireProcessingOrderAsync(DateTime now, CancellationToken ct);

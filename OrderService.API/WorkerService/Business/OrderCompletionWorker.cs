@@ -2,7 +2,7 @@
 using OrderService.Application.Interface.Repository;
 using OrderService.Domain.Entities;
 
-namespace OrderService.API.WorkerService
+namespace OrderService.API.WorkerService.Business
 {
     public sealed class OrderCompletionWorker : BackgroundService
     {

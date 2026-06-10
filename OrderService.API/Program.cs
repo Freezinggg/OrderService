@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
 using OrderService.API.WorkerService;
+using OrderService.API.WorkerService.Reconciliation;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Interface;
 using OrderService.Application.Interface.Cache;
@@ -71,6 +72,7 @@ namespace OrderService.API
             //builder.Services.AddHostedService<OrderCompletionWorker>();
             //builder.Services.AddHostedService<OrderExpirationWorker>();
             builder.Services.AddHostedService<OutboxWorker>();
+            builder.Services.AddHostedService<OrderReconciliationWorker>();
 
 
             //Conn strings

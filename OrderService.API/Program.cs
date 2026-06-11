@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
 using OrderService.API.WorkerService;
+using OrderService.API.WorkerService.Event;
 using OrderService.API.WorkerService.Reconciliation;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Interface;
@@ -71,8 +72,9 @@ namespace OrderService.API
             //Background Worker
             //builder.Services.AddHostedService<OrderCompletionWorker>();
             //builder.Services.AddHostedService<OrderExpirationWorker>();
-            builder.Services.AddHostedService<OutboxWorker>();
-            builder.Services.AddHostedService<OrderReconciliationWorker>();
+            //builder.Services.AddHostedService<OutboxWorker>();
+            //builder.Services.AddHostedService<OrderReconciliationWorker>();
+            builder.Services.AddHostedService<EventPublishWorker>();
 
 
             //Conn strings

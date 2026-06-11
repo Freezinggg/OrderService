@@ -10,7 +10,7 @@ namespace OrderService.Application.Interface.Repository
 {
     public interface IOutboxEventRepository
     {
-        Task MarkOutboxEventProcessed(Guid outboxId, CancellationToken ct);
+        Task MarkOutboxEventPublished(Guid outboxId, CancellationToken ct);
         Task AddAsync(OutboxEvent outboxEvent, CancellationToken ct);
         Task<List<OutboxEventRecord>> ClaimOutboxEventsAsync(int batchSize, CancellationToken ct);
     }

@@ -41,7 +41,7 @@ namespace OrderService.Infrastructure.Persistence.Repository
             return claimableEvents;
         }
 
-        public async Task MarkOutboxEventProcessed(Guid outboxId, CancellationToken ct)
+        public async Task MarkOutboxEventPublished(Guid outboxId, CancellationToken ct)
         {
             try
             {

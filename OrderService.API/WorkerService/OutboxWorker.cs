@@ -43,7 +43,7 @@ namespace OrderService.API.WorkerService
                         try
                         {
                             await Task.Delay(3000, stoppingToken);
-                            await _outboxRepo.MarkOutboxEventProcessed(outboxEvent.Id, stoppingToken);
+                            await _outboxRepo.MarkOutboxEventPublished(outboxEvent.Id, stoppingToken);
                             //throw new Exception("Projection update failed");
 
 

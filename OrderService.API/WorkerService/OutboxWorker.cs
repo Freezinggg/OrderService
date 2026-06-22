@@ -46,7 +46,6 @@ namespace OrderService.API.WorkerService
                             await _outboxRepo.MarkOutboxEventPublished(outboxEvent.Id, stoppingToken);
                             //throw new Exception("Projection update failed");
 
-
                             //TODO: do async work here
 
                             #region Async continuation projection

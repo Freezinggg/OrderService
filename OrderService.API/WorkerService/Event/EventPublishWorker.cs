@@ -1,6 +1,8 @@
 ﻿using Confluent.Kafka;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OrderService.Application.Interface.Repository;
+using OrderService.Infrastructure.Configuration.Kafka;
 
 namespace OrderService.API.WorkerService.Event
 {
@@ -8,18 +10,23 @@ namespace OrderService.API.WorkerService.Event
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<EventPublishWorker> _logger;
+        private readonly KafkaOptions _kafkaConfig;
+
         private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(3);
         private readonly ProducerConfig config;
         private readonly IProducer<Null, string> producer;
 
-        public EventPublishWorker(IServiceScopeFactory scopeFactory, ILogger<EventPublishWorker> logger)
+        public EventPublishWorker(IServiceScopeFactory scopeFactory
+            ,ILogger<EventPublishWorker> logger
+            ,IOptions<KafkaOptions> kafkaConfig)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _kafkaConfig = kafkaConfig.Value;
 
             config = new ProducerConfig
             {
-                BootstrapServers = "kafka:9092"
+                BootstrapServers = _kafkaConfig.BootstrapServers
             };
 
             producer = new ProducerBuilder<Null, string>(config).Build();
@@ -50,14 +57,7 @@ namespace OrderService.API.WorkerService.Event
                                 _logger.LogError($"Paylod empty [Outbox ID : {outboxEvent.Id}]");
                                 continue;
                             }
-
-                            //Publish to Kafka first, then update outbox as published
-                            //Console.WriteLine(
-                            //    "Instance {Instance} publishing {OutboxId}",
-                            //    Environment.GetEnvironmentVariable("INSTANCE_NAME"),
-                            //    outboxEvent.Id);
-
-                            var result = await producer.ProduceAsync("order-events", new Message<Null, string> { Value = outboxEvent.Payload });
+                            var result = await producer.ProduceAsync(_kafkaConfig.OrderEventsTopic, new Message<Null, string> { Value = outboxEvent.Payload });
                             Console.WriteLine(JsonConvert.SerializeObject(result));
 
                             await _outboxRepo.MarkOutboxEventPublished(outboxEvent.Id, stoppingToken);

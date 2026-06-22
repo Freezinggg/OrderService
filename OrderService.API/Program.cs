@@ -10,6 +10,7 @@ using OrderService.Application.Interface.Metrics;
 using OrderService.Application.Interface.RateLimit;
 using OrderService.Application.Interface.Repository;
 using OrderService.Infrastructure.Cache;
+using OrderService.Infrastructure.Configuration.Kafka;
 using OrderService.Infrastructure.Observability;
 using OrderService.Infrastructure.Persistence;
 using OrderService.Infrastructure.Persistence.Repository;
@@ -69,12 +70,15 @@ namespace OrderService.API
                 });
             }
 
+            builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection("Kafka"));
+
             //Background Worker
             //builder.Services.AddHostedService<OrderCompletionWorker>();
             //builder.Services.AddHostedService<OrderExpirationWorker>();
             //builder.Services.AddHostedService<OutboxWorker>();
             //builder.Services.AddHostedService<OrderReconciliationWorker>();
             builder.Services.AddHostedService<EventPublishWorker>();
+            builder.Services.AddHostedService<OrderProjectionConsumerWorker>();
 
 
             //Conn strings
@@ -100,6 +104,7 @@ namespace OrderService.API
             });
 
             builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
 
 
             var app = builder.Build();

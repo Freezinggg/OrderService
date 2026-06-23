@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderService.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.Outbox.Payloads
 {
-    public class OrderCreatedPayload
+    public record OrderCreatedPayload
     {
-        public Guid OrderId { get; }
-        public OrderCreatedPayload(Guid orderId) => OrderId = orderId;
+        public Guid OrderId { get; init; }
+        public OrderStatus Status { get; init; }
+        public OrderCreatedPayload(Guid orderId, OrderStatus status)
+        {
+            OrderId = orderId;
+            Status = status;
+        }
     }
 }

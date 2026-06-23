@@ -71,7 +71,7 @@ namespace OrderService.Application.Handler.CreateOrder
                     );
 
                 //Outbox Pattern
-                var payload = JsonConvert.SerializeObject(new OrderCreatedPayload(orderId));
+                var payload = JsonConvert.SerializeObject(new OrderCreatedPayload(orderId, order.Status));
                 OutboxEvent outboxEvent = new(Guid.NewGuid(), EventType.OrderCreated, payload);
 
                 IdempotencyRecord idempotencyRecord = new(Guid.NewGuid(), request.IdempotencyKey, order.Id, currentDateTime);

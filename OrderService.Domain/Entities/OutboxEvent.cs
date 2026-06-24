@@ -33,5 +33,6 @@ namespace OrderService.Domain.Entities
     public enum EventType : int
     {
         OrderCreated = 0,
+        OrderCompleted = 1,
     }
 }

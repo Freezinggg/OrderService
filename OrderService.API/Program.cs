@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
 using OrderService.API.WorkerService;
-using OrderService.API.WorkerService.Event;
+using OrderService.API.WorkerService.Business;
+using OrderService.API.WorkerService.Event.Consumer.Projection;
+using OrderService.API.WorkerService.Event.Publisher;
 using OrderService.API.WorkerService.Reconciliation;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Interface;

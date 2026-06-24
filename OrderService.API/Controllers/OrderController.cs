@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using OrderService.Application.Common;
 using OrderService.Application.DTO;
 using OrderService.Application.Handler.CancelOrder;
+using OrderService.Application.Handler.CompleteOrder;
 using OrderService.Application.Handler.CreateOrder;
 using OrderService.Application.Handler.GetOrderById;
 using OrderService.Application.Interface.Metrics;
@@ -97,9 +98,23 @@ namespace OrderService.API.Controllers
         }
 
         [HttpPost("{orderId}/cancel")]
-        public async Task<IActionResult> CancelOrdeer(Guid orderId)
+        public async Task<IActionResult> CancelOrder(Guid orderId)
         {
             var result = await _mediator.Send(new CancelOrderCommand(orderId));
+            return result.Status switch
+            {
+                ResultStatus.Success => Ok(ApiResponse<bool>.Ok(result.Data)),
+                ResultStatus.Invalid => BadRequest(ApiResponse<bool>.Fail(result.ErrorMessage)),
+                ResultStatus.Fail => Conflict(ApiResponse<bool>.Fail(result.ErrorMessage)),
+                ResultStatus.Error => StatusCode(500, ApiResponse<bool>.Fail(result.ErrorMessage)),
+                _ => StatusCode(500, ApiResponse<bool>.Fail("Unhandled result status"))
+            };
+        }
+
+        [HttpPost("{orderId}/complete")]
+        public async Task<IActionResult> CompleteOrder(Guid orderId)
+        {
+            var result = await _mediator.Send(new CompleteOrderCommand(orderId));
             return result.Status switch
             {
                 ResultStatus.Success => Ok(ApiResponse<bool>.Ok(result.Data)),

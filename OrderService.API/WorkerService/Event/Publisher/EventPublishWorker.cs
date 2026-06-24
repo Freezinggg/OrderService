@@ -1,10 +1,11 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OrderService.Application.Common;
 using OrderService.Application.Interface.Repository;
 using OrderService.Infrastructure.Configuration.Kafka;
 
-namespace OrderService.API.WorkerService.Event
+namespace OrderService.API.WorkerService.Event.Publisher
 {
     public class EventPublishWorker : BackgroundService
     {
@@ -17,8 +18,8 @@ namespace OrderService.API.WorkerService.Event
         private readonly IProducer<Null, string> producer;
 
         public EventPublishWorker(IServiceScopeFactory scopeFactory
-            ,ILogger<EventPublishWorker> logger
-            ,IOptions<KafkaOptions> kafkaConfig)
+            , ILogger<EventPublishWorker> logger
+            , IOptions<KafkaOptions> kafkaConfig)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
@@ -57,7 +58,16 @@ namespace OrderService.API.WorkerService.Event
                                 _logger.LogError($"Paylod empty [Outbox ID : {outboxEvent.Id}]");
                                 continue;
                             }
-                            var result = await producer.ProduceAsync(_kafkaConfig.OrderEventsTopic, new Message<Null, string> { Value = outboxEvent.Payload });
+
+                            var eventMsg = new EventMessage()
+                            {
+                                EventId = outboxEvent.Id,
+                                EventType = outboxEvent.EventType.ToString(),
+                                Payload = outboxEvent.Payload,
+                            };
+
+                            var result = await producer.ProduceAsync(_kafkaConfig.OrderEventsTopic
+                                            , new Message<Null, string> { Value = JsonConvert.SerializeObject(eventMsg) });
                             Console.WriteLine(JsonConvert.SerializeObject(result));
 
                             await _outboxRepo.MarkOutboxEventPublished(outboxEvent.Id, stoppingToken);

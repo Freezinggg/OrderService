@@ -63,6 +63,12 @@ namespace OrderService.Domain.Entities
             Status = OrderStatus.Cancelled;
         }
 
+        public void Complete()
+        {
+            EnsureNotTerminal();
+            Status = OrderStatus.Completed;
+        }
+
         public void Expire()
         {
             EnsureNotTerminal();

@@ -12,5 +12,6 @@ namespace OrderService.Application.Interface.Repository
         Task<OrderProjection?> GetByIdAsync(Guid id, CancellationToken ct);
         Task AddAsync(OrderProjection orderProjection, CancellationToken ct);
         Task UpdateStatus(OrderProjection orderProjection, CancellationToken ct);
+        Task DeleteAllAsync(CancellationToken ct);
     }
 }

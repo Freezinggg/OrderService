@@ -24,6 +24,11 @@ namespace OrderService.Infrastructure.Persistence.Repository
             await _db.SaveChangesAsync(ct);
         }
 
+        public Task DeleteAllAsync(CancellationToken ct)
+        {
+            return _db.OrderProjections.ExecuteDeleteAsync(ct);
+        }
+
         public Task<OrderProjection?> GetByIdAsync(Guid id, CancellationToken ct)
         {
             return _db.OrderProjections.FirstOrDefaultAsync(x => x.OrderId == id, ct);

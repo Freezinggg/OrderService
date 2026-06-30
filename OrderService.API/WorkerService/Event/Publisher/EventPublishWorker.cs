@@ -64,6 +64,7 @@ namespace OrderService.API.WorkerService.Event.Publisher
                                 EventId = outboxEvent.Id,
                                 EventType = outboxEvent.EventType.ToString(),
                                 Payload = outboxEvent.Payload,
+                                OccurredAtUtc = outboxEvent.CreatedAt
                             };
 
                             var result = await producer.ProduceAsync(_kafkaConfig.OrderEventsTopic

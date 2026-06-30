@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace OrderService.Application.Record
 {
-    public sealed record OutboxEventRecord(Guid Id, EventType EventType, string Payload);
+    public sealed record OutboxEventRecord(Guid Id, EventType EventType, string Payload, DateTime CreatedAt);
 }

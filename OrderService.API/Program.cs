@@ -6,11 +6,13 @@ using OrderService.API.WorkerService.Event.Consumer.Projection;
 using OrderService.API.WorkerService.Event.Publisher;
 using OrderService.API.WorkerService.Reconciliation;
 using OrderService.Application.Handler.CreateOrder;
+using OrderService.Application.Handler.ReplayProjection;
 using OrderService.Application.Interface;
 using OrderService.Application.Interface.Cache;
 using OrderService.Application.Interface.Metrics;
 using OrderService.Application.Interface.RateLimit;
 using OrderService.Application.Interface.Repository;
+using OrderService.Application.Services;
 using OrderService.Infrastructure.Cache;
 using OrderService.Infrastructure.Configuration.Kafka;
 using OrderService.Infrastructure.Observability;
@@ -40,8 +42,11 @@ namespace OrderService.API
             builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             builder.Services.AddScoped<IPressureGate, PressureGate>();
             builder.Services.AddScoped<IOrderSummaryCache, InMemoryOrderSummaryCache>();
-            
-            
+
+            builder.Services.AddScoped<OrderProjectionService>();
+            builder.Services.AddScoped<ReplayProjectionHandler>();
+
+
             //Uses singleton bcs its process-wide, single. not per request, but per system
             builder.Services.AddSingleton<IOrderMetric, OTelOrderMetricRecorder>();
             builder.Services.AddSingleton<IPressureMetric, OTelPressureMetricRecorder>();

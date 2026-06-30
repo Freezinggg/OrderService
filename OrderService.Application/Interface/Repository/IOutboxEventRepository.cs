@@ -13,5 +13,6 @@ namespace OrderService.Application.Interface.Repository
         Task MarkOutboxEventPublished(Guid outboxId, CancellationToken ct);
         Task AddAsync(OutboxEvent outboxEvent, CancellationToken ct);
         Task<List<OutboxEventRecord>> ClaimOutboxEventsAsync(int batchSize, CancellationToken ct);
+        Task<List<OutboxEventRecord>> GetAllAsync(CancellationToken cancellationToken);
     }
 }

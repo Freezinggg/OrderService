@@ -72,6 +72,7 @@ namespace OrderService.Infrastructure.Persistence
                     entity.Property(x => x.EventType).IsRequired();
                     entity.Property(x => x.Payload).IsRequired();
                     entity.Property(x => x.CreatedAt).IsRequired();
+                    entity.Property(x => x.EventVersion).IsRequired();
                     entity.Property(x => x.ProcessedAt);
                 })
                 .Entity<OrderProjection>(entity =>

@@ -30,12 +30,12 @@ namespace OrderService.Infrastructure.Persistence.Repository
         {
             var claimableEvents = await _db.OutboxEvents
                 .FromSqlInterpolated($@"
-                        SELECT ""Id"", ""EventType"", ""Payload"", ""CreatedAt""
+                        SELECT ""Id"", ""EventType"", ""Payload"", ""EventVersion"", ""CreatedAt""
                         FROM ""OutboxEvents""
                         WHERE ""ProcessedAt"" IS NULL
                         FOR UPDATE SKIP LOCKED
                         LIMIT {batchSize}")
-                .Select(o => new OutboxEventRecord(o.Id, o.EventType, o.Payload, o.CreatedAt))
+                .Select(o => new OutboxEventRecord(o.Id, o.EventType, o.Payload, o.EventVersion, o.CreatedAt))
                 .ToListAsync(ct);
 
             return claimableEvents;
@@ -63,6 +63,7 @@ namespace OrderService.Infrastructure.Persistence.Repository
                     o.Id,
                     o.EventType,
                     o.Payload,
+                    o.EventVersion,
                     o.CreatedAt))
                 .ToListAsync(ct);
         }

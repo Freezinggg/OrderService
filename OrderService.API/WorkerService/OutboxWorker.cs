@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using OrderService.Application.Interface.Repository;
-using OrderService.Application.Outbox.Payloads;
+using OrderService.Application.Outbox.Payloads.OrderCreated;
 using OrderService.Domain.Entities;
 
 namespace OrderService.API.WorkerService
@@ -50,7 +50,7 @@ namespace OrderService.API.WorkerService
 
                             #region Async continuation projection
                             //Projection async work
-                            var payload = JsonConvert.DeserializeObject<OrderCreatedPayload>(outboxEvent.Payload);
+                            var payload = JsonConvert.DeserializeObject<OrderCreatedPayload_V1>(outboxEvent.Payload);
                             if(payload is null)
                             {
                                 _logger.LogInformation("Payload is null");

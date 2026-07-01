@@ -47,6 +47,7 @@ namespace OrderService.Application.Handler.ReplayProjection
                         {
                             EventId = outbox.Id,
                             EventType = outbox.EventType.ToString(),
+                            EventVersion = outbox.EventVersion,
                             Payload = outbox.Payload,
                             OccurredAtUtc = outbox.CreatedAt
                         };

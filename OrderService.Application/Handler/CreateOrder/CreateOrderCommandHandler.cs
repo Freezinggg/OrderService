@@ -7,6 +7,7 @@ using OrderService.Application.Interface;
 using OrderService.Application.Interface.Metrics;
 using OrderService.Application.Interface.Repository;
 using OrderService.Application.Outbox.Payloads;
+using OrderService.Application.Outbox.Payloads.OrderCreated;
 using OrderService.Domain.Entities;
 using OrderService.Domain.Exception;
 using System;
@@ -71,8 +72,8 @@ namespace OrderService.Application.Handler.CreateOrder
                     );
 
                 //Outbox Pattern
-                var payload = JsonConvert.SerializeObject(new OrderCreatedPayload(orderId, order.Status));
-                OutboxEvent outboxEvent = new(Guid.NewGuid(), EventType.OrderCreated, payload);
+                var payload = JsonConvert.SerializeObject(new OrderCreatedPayload_V2(orderId, order.Status, "High"));
+                OutboxEvent outboxEvent = new(Guid.NewGuid(), EventType.OrderCreated, payload, 2);
 
                 IdempotencyRecord idempotencyRecord = new(Guid.NewGuid(), request.IdempotencyKey, order.Id, currentDateTime);
 

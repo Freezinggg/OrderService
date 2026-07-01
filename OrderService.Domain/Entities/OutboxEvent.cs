@@ -11,17 +11,19 @@ namespace OrderService.Domain.Entities
         public Guid Id { get; }
         public EventType EventType { get; private set; }
         public string Payload { get; }
+        public int EventVersion { get; } = 1;
         public DateTime CreatedAt { get; }
         public DateTime? ProcessedAt { get; private set; }
 
         private OutboxEvent() { }
 
-        public OutboxEvent(Guid id, EventType eventType, string payload)
+        public OutboxEvent(Guid id, EventType eventType, string payload, int eventVersion = 1)
         {
             Id = id;
             EventType = eventType;
             Payload = payload;
             CreatedAt = DateTime.UtcNow;
+            EventVersion = eventVersion;
         }
 
         public void MarkAsProcessed()

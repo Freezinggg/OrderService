@@ -54,9 +54,7 @@ namespace OrderService.API.WorkerService.Event.Consumer.Projection
                 {
                     try
                     {
-                        Console.WriteLine("Before Poll");
                         var result = consumer.Consume(TimeSpan.Zero);
-                        Console.WriteLine("After Poll");
 
                         /*
                                 POINT FOR LATER:
